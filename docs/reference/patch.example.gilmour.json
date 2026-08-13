@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "name": "Gilmour — Comfortably Numb Lead",
+  "description": "Singing fuzz lead into a clean British amp HEAD, paired with a Greenback 4x12 cab IR (the head is amp-only, so the IR is what keeps it from sounding thin). Long quarter-note delay, subtle hall, compression for sustain.",
+  "source_request": "create a patch that sounds like David Gilmour's lead from Comfortably Numb",
+  "reference": { "artist": "David Gilmour", "song": "Comfortably Numb", "notes": "Second solo voicing." },
+  "created_by": "scaffold-example",
+  "tags": ["lead", "fuzz", "pink floyd", "sustaining"],
+  "io": { "input_gain_db": 0, "output_gain_db": -1 },
+  "chain": [
+    {
+      "type": "compressor",
+      "enabled": true,
+      "label": "Sustain comp",
+      "params": { "threshold_db": -18, "ratio": 4, "attack_ms": 12, "release_ms": 180, "makeup_db": 3 }
+    },
+    {
+      "type": "drive",
+      "enabled": true,
+      "label": "Big Muff fuzz",
+      "params": { "style": "fuzz", "drive": 0.7, "tone": 0.45, "level": 0.6 }
+    },
+    {
+      "type": "nam_capture",
+      "enabled": true,
+      "label": "Hiwatt clean head (amp only)",
+      "params": { "capture_id": "hiwatt_dr103_clean", "input_level_db": 0, "output_level_db": 0 }
+    },
+    {
+      "type": "ir_cab",
+      "enabled": true,
+      "label": "Greenback 4x12 cab IR (required — head has no cab)",
+      "params": { "capture_id": "greenback_412_cab", "level_db": 0 }
+    },
+    {
+      "type": "eq",
+      "enabled": true,
+      "label": "Voicing",
+      "params": { "bands": [ { "freq_hz": 500, "gain_db": 2.5, "q": 0.9, "shape": "bell" }, { "freq_hz": 3000, "gain_db": 1.5, "q": 0.8, "shape": "bell" } ] }
+    },
+    {
+      "type": "delay",
+      "enabled": true,
+      "label": "Quarter-note delay",
+      "params": { "time_ms": 480, "feedback": 0.35, "mix": 0.3, "style": "analog" }
+    },
+    {
+      "type": "reverb",
+      "enabled": true,
+      "label": "Ambience",
+      "params": { "size": 0.6, "decay_s": 2.4, "mix": 0.18, "style": "hall" }
+    }
+  ]
+}

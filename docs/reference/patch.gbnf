@@ -1,0 +1,42 @@
+# GBNF grammar to constrain llama.cpp output to syntactically valid patch JSON.
+#
+# This guarantees well-formed JSON (and roughly the right shape) from small local models.
+# It is intentionally permissive on the exact parameter set — fine-grained range/field
+# checking is done afterward by validate.py. The job here is: never emit broken JSON.
+#
+# Use with llama.cpp: pass as the `grammar` field on the request, or --grammar-file.
+
+root        ::= patch
+patch       ::= "{" ws
+                "\"schema_version\"" ws ":" ws "\"1.0\"" ws "," ws
+                "\"name\"" ws ":" ws string ws "," ws
+                ("\"description\"" ws ":" ws string ws "," ws)?
+                ("\"source_request\"" ws ":" ws string ws "," ws)?
+                ("\"created_by\"" ws ":" ws string ws "," ws)?
+                "\"chain\"" ws ":" ws nodearray ws
+                "}"
+
+nodearray   ::= "[" ws node (ws "," ws node)* ws "]"
+
+node        ::= "{" ws
+                "\"type\"" ws ":" ws string ws "," ws
+                ("\"enabled\"" ws ":" ws boolean ws "," ws)?
+                ("\"label\"" ws ":" ws string ws "," ws)?
+                "\"params\"" ws ":" ws object ws
+                "}"
+
+# Generic JSON value machinery
+object      ::= "{" ws (member (ws "," ws member)*)? ws "}"
+member      ::= string ws ":" ws value
+array       ::= "[" ws (value (ws "," ws value)*)? ws "]"
+value       ::= object | array | string | number | boolean | "null"
+
+string      ::= "\"" char* "\""
+char        ::= [^"\\] | "\\" (["\\/bfnrt] | "u" hex hex hex hex)
+hex         ::= [0-9a-fA-F]
+number      ::= "-"? int frac? exp?
+int         ::= "0" | [1-9] [0-9]*
+frac        ::= "." [0-9]+
+exp         ::= ("e" | "E") ("+" | "-")? [0-9]+
+boolean     ::= "true" | "false"
+ws          ::= [ \t\n]*

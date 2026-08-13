@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-tone-architect/schema/capture.manifest.schema.json",
+  "title": "Capture Library Manifest",
+  "description": "Catalog of the NAM captures / IRs the user has downloaded and made available.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "captures"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "root": {
+      "type": "string",
+      "description": "Optional base directory that capture `file` paths are relative to."
+    },
+    "captures": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/capture"
+      }
+    }
+  },
+  "$defs": {
+    "capture": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "file",
+        "category"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "description": "Stable, lowercase id referenced by patches via capture_id."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable display name."
+        },
+        "file": {
+          "type": "string",
+          "description": "Path to the .nam (or .wav IR) file."
+        },
+        "format": {
+          "enum": [
+            "nam",
+            "wav_ir"
+          ],
+          "default": "nam"
+        },
+        "category": {
+          "enum": [
+            "amp",
+            "pedal",
+            "cab",
+            "outboard"
+          ]
+        },
+        "gain": {
+          "enum": [
+            "clean",
+            "crunch",
+            "mid_gain",
+            "high_gain",
+            "fuzz",
+            "n_a"
+          ],
+          "default": "n_a",
+          "description": "Approximate gain character \u2014 a key retrieval filter."
+        },
+        "character": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Free tonal descriptors, e.g. british, scooped, glassy, warm, aggressive."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Artist/genre/usage hints, e.g. gilmour, blues, clean platform."
+        },
+        "source": {
+          "type": "string",
+          "description": "Where it came from, e.g. tone3000."
+        },
+        "sample_rate": {
+          "type": "integer",
+          "description": "Native sample rate if relevant."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "includes_cab": {
+          "type": "boolean",
+          "default": false,
+          "description": "Amp captures only: True if it already includes a speaker cab (Full Rig/Combo). False = amp head, which REQUIRES a separate cab IR to avoid a thin/harsh tone."
+        }
+      }
+    }
+  }
+}
