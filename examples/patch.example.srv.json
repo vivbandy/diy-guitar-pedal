@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "name": "SRV \u2014 Warm Clean Strat",
+  "description": "Warm, dynamic clean-to-edge-of-breakup Texas blues tone. Uses a FULL-RIG capture (amp + cab built in), so no separate cab IR is needed. Tube Screamer pushes the mids, light spring reverb.",
+  "source_request": "warm clean tone like Stevie Ray Vaughan, a little hair on it",
+  "reference": {
+    "artist": "Stevie Ray Vaughan",
+    "notes": "Clean-ish blues rhythm/lead."
+  },
+  "created_by": "scaffold-example",
+  "tags": [
+    "blues",
+    "clean",
+    "dynamic"
+  ],
+  "io": {
+    "input_gain_db": 1,
+    "output_gain_db": 0
+  },
+  "chain": [
+    {
+      "type": "drive",
+      "enabled": true,
+      "label": "TS808 push",
+      "params": {
+        "style": "overdrive",
+        "drive": 0.35,
+        "tone": 0.55,
+        "level": 0.6
+      }
+    },
+    {
+      "type": "nam_capture",
+      "enabled": true,
+      "label": "Bassman edge of breakup (full rig \u2014 cab included)",
+      "params": {
+        "capture_id": "fender_bassman_fullrig_crunch"
+      }
+    },
+    {
+      "type": "reverb",
+      "enabled": true,
+      "label": "Room",
+      "params": {
+        "size": 0.35,
+        "decay_s": 1.2,
+        "mix": 0.12,
+        "style": "spring"
+      }
+    }
+  ]
+}

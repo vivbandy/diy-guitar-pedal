@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-tone-architect/schema/patch.schema.json",
+  "title": "Tone Patch",
+  "description": "A complete, loadable guitar tone: an ordered signal chain of typed nodes.",
+  "type": "object",
+  "required": ["schema_version", "name", "chain"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "description": { "type": "string", "maxLength": 1000 },
+    "source_request": {
+      "type": "string",
+      "description": "The original natural-language request that produced this patch."
+    },
+    "reference": {
+      "type": "object",
+      "description": "Optional provenance for the target tone.",
+      "additionalProperties": false,
+      "properties": {
+        "artist": { "type": "string" },
+        "song": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Identifier of the model/version that generated this patch."
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "io": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_gain_db": { "type": "number", "minimum": -24, "maximum": 24, "default": 0 },
+        "output_gain_db": { "type": "number", "minimum": -24, "maximum": 24, "default": 0 }
+      }
+    },
+    "chain": {
+      "type": "array",
+      "description": "Ordered signal chain. Order is the signal-flow order (input -> output).",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/node" }
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string" },
+        "enabled": { "type": "boolean", "default": true },
+        "label": { "type": "string", "description": "Optional human label for this node." }
+      },
+      "oneOf": [
+        { "$ref": "#/$defs/nam_capture" },
+        { "$ref": "#/$defs/ir_cab" },
+        { "$ref": "#/$defs/drive" },
+        { "$ref": "#/$defs/compressor" },
+        { "$ref": "#/$defs/noise_gate" },
+        { "$ref": "#/$defs/eq" },
+        { "$ref": "#/$defs/delay" },
+        { "$ref": "#/$defs/reverb" },
+        { "$ref": "#/$defs/modulation" },
+        { "$ref": "#/$defs/filter" }
+      ]
+    },
+
+    "nam_capture": {
+      "properties": {
+        "type": { "const": "nam_capture" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "required": ["capture_id"],
+          "additionalProperties": false,
+          "properties": {
+            "capture_id": {
+              "type": "string",
+              "description": "MUST reference an id present in the user's capture manifest."
+            },
+            "input_level_db": { "type": "number", "minimum": -24, "maximum": 24, "default": 0 },
+            "output_level_db": { "type": "number", "minimum": -24, "maximum": 24, "default": 0 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "ir_cab": {
+      "properties": {
+        "type": { "const": "ir_cab" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "required": ["capture_id"],
+          "additionalProperties": false,
+          "properties": {
+            "capture_id": { "type": "string", "description": "Cab IR id from the manifest." },
+            "level_db": { "type": "number", "minimum": -24, "maximum": 24, "default": 0 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "drive": {
+      "description": "Overdrive / distortion / fuzz / boost — distinguished by `style`.",
+      "properties": {
+        "type": { "const": "drive" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "style": { "enum": ["boost", "overdrive", "distortion", "fuzz"], "default": "overdrive" },
+            "drive": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 },
+            "tone": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 },
+            "level": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "compressor": {
+      "properties": {
+        "type": { "const": "compressor" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "threshold_db": { "type": "number", "minimum": -60, "maximum": 0, "default": -18 },
+            "ratio": { "type": "number", "minimum": 1, "maximum": 20, "default": 4 },
+            "attack_ms": { "type": "number", "minimum": 0.1, "maximum": 200, "default": 10 },
+            "release_ms": { "type": "number", "minimum": 1, "maximum": 1000, "default": 100 },
+            "makeup_db": { "type": "number", "minimum": 0, "maximum": 24, "default": 0 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "noise_gate": {
+      "properties": {
+        "type": { "const": "noise_gate" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "threshold_db": { "type": "number", "minimum": -90, "maximum": 0, "default": -60 },
+            "release_ms": { "type": "number", "minimum": 1, "maximum": 1000, "default": 100 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "eq": {
+      "description": "Up to N parametric bands plus optional low/high shelves.",
+      "properties": {
+        "type": { "const": "eq" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bands": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "required": ["freq_hz", "gain_db"],
+                "additionalProperties": false,
+                "properties": {
+                  "freq_hz": { "type": "number", "minimum": 20, "maximum": 20000 },
+                  "gain_db": { "type": "number", "minimum": -18, "maximum": 18 },
+                  "q": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 0.7 },
+                  "shape": { "enum": ["bell", "low_shelf", "high_shelf"], "default": "bell" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "delay": {
+      "properties": {
+        "type": { "const": "delay" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "time_ms": { "type": "number", "minimum": 0, "maximum": 2000, "default": 400 },
+            "feedback": { "type": "number", "minimum": 0, "maximum": 0.95, "default": 0.3 },
+            "mix": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.25 },
+            "style": { "enum": ["digital", "analog", "tape"], "default": "digital" }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "reverb": {
+      "properties": {
+        "type": { "const": "reverb" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "size": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 },
+            "decay_s": { "type": "number", "minimum": 0.1, "maximum": 20, "default": 2 },
+            "mix": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.2 },
+            "style": { "enum": ["room", "hall", "plate", "spring"], "default": "hall" }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "modulation": {
+      "description": "Chorus / flanger / phaser / tremolo — distinguished by `style`.",
+      "properties": {
+        "type": { "const": "modulation" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "style": { "enum": ["chorus", "flanger", "phaser", "tremolo"], "default": "chorus" },
+            "rate_hz": { "type": "number", "minimum": 0.01, "maximum": 20, "default": 1 },
+            "depth": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 },
+            "mix": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    },
+
+    "filter": {
+      "description": "Static or auto filter / wah.",
+      "properties": {
+        "type": { "const": "filter" },
+        "enabled": { "type": "boolean" },
+        "label": { "type": "string" },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "enum": ["lowpass", "highpass", "bandpass", "wah"], "default": "lowpass" },
+            "cutoff_hz": { "type": "number", "minimum": 20, "maximum": 20000, "default": 1000 },
+            "resonance": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.3 }
+          }
+        }
+      },
+      "required": ["type", "params"]
+    }
+  }
+}

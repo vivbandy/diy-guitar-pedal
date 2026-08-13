@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "root": "captures",
+  "captures": [
+    {
+      "id": "hiwatt_dr103_clean",
+      "name": "Hiwatt DR103 Head — Clean (Amp Head)",
+      "file": "hiwatt_dr103_clean.nam",
+      "format": "nam",
+      "category": "amp",
+      "gain": "clean",
+      "includes_cab": false,
+      "character": ["british", "headroom", "glassy", "full"],
+      "tags": ["gilmour", "pink floyd", "clean platform"],
+      "source": "tone3000"
+    },
+    {
+      "id": "fender_twin_fullrig_clean",
+      "name": "Fender Twin Reverb — Clean (Full Rig)",
+      "file": "fender_twin_fullrig_clean.nam",
+      "format": "nam",
+      "category": "amp",
+      "gain": "clean",
+      "includes_cab": true,
+      "character": ["american", "sparkly", "scooped", "bright"],
+      "tags": ["srv", "blues", "country", "clean platform"],
+      "source": "tone3000"
+    },
+    {
+      "id": "fender_bassman_fullrig_crunch",
+      "name": "Fender Bassman — Edge of Breakup (Full Rig)",
+      "file": "fender_bassman_fullrig_crunch.nam",
+      "format": "nam",
+      "category": "amp",
+      "gain": "crunch",
+      "includes_cab": true,
+      "character": ["american", "warm", "dynamic", "touch-sensitive"],
+      "tags": ["srv", "blues", "classic rock"],
+      "source": "tone3000"
+    },
+    {
+      "id": "marshall_plexi_head_crunch",
+      "name": "Marshall Plexi Head — Crunch (Amp Head)",
+      "file": "marshall_plexi_head_crunch.nam",
+      "format": "nam",
+      "category": "amp",
+      "gain": "mid_gain",
+      "includes_cab": false,
+      "character": ["british", "midrange", "aggressive", "classic"],
+      "tags": ["classic rock", "hendrix", "ac/dc"],
+      "source": "tone3000"
+    },
+    {
+      "id": "mesa_rectifier_head_high_gain",
+      "name": "Mesa Dual Rectifier Head — High Gain (Amp Head)",
+      "file": "mesa_rectifier_head_high_gain.nam",
+      "format": "nam",
+      "category": "amp",
+      "gain": "high_gain",
+      "includes_cab": false,
+      "character": ["scooped", "tight", "modern", "aggressive"],
+      "tags": ["metal", "djent", "hard rock"],
+      "source": "tone3000"
+    },
+    {
+      "id": "bigmuff_fuzz",
+      "name": "Big Muff Pi — Fuzz",
+      "file": "bigmuff_fuzz.nam",
+      "format": "nam",
+      "category": "pedal",
+      "gain": "fuzz",
+      "includes_cab": false,
+      "character": ["thick", "saturated", "sustaining", "wooly"],
+      "tags": ["gilmour", "pink floyd", "fuzz lead"],
+      "source": "tone3000"
+    },
+    {
+      "id": "tubescreamer_od",
+      "name": "Tube Screamer TS808 — Overdrive",
+      "file": "tubescreamer_od.nam",
+      "format": "nam",
+      "category": "pedal",
+      "gain": "mid_gain",
+      "includes_cab": false,
+      "character": ["mid-bump", "smooth", "tightening"],
+      "tags": ["srv", "blues", "boost"],
+      "source": "tone3000"
+    },
+    {
+      "id": "greenback_412_cab",
+      "name": "4x12 Greenback Cabinet IR",
+      "file": "greenback_412_cab.wav",
+      "format": "wav_ir",
+      "category": "cab",
+      "gain": "n_a",
+      "character": ["british", "warm", "vintage", "midrange"],
+      "tags": ["gilmour", "classic rock", "marshall", "clean platform"],
+      "source": "tone3000"
+    },
+    {
+      "id": "v30_412_cab",
+      "name": "4x12 V30 Cabinet IR",
+      "file": "v30_412_cab.wav",
+      "format": "wav_ir",
+      "category": "cab",
+      "gain": "n_a",
+      "character": ["tight", "modern", "focused", "aggressive"],
+      "tags": ["metal", "rock", "high gain"],
+      "source": "tone3000"
+    }
+  ]
+}
