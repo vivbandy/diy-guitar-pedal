@@ -8,7 +8,7 @@ CAPTURES ?= captures
 .DEFAULT_GOAL := help
 
 .PHONY: help venv install install-dev test lint fmt generate validate scaffold \
-        db-sync t3k-sync plugin-test clean
+        db-sync t3k-login t3k-sync plugin-test clean
 
 help:
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | expand -t24
@@ -48,7 +48,10 @@ scaffold: ## CAPTURES=<dir> build a manifest stub from a captures folder
 db-sync: ## push manifest + recipes into Supabase (needs SUPABASE_URL / SUPABASE_KEY)
 	$(BIN)/tone-sync --manifest $(MANIFEST) --recipes recipes/recipes.seed.jsonl
 
-t3k-sync: ## build a manifest from TONE3000 (needs TONE3000_TOKEN)
+t3k-login: ## sign in to TONE3000 (needs TONE3000_CLIENT_ID = publishable key)
+	$(BIN)/tone3000-login
+
+t3k-sync: ## build a manifest from your TONE3000 favorites (run t3k-login first)
 	$(BIN)/tone3000-sync --scope favorited --out captures.manifest.json --merge
 
 plugin-test: ## compile and run the plugin core tests (clang++, no cmake)

@@ -69,7 +69,7 @@ Needs Python 3.11+ (3.13 recommended). Configuration is all environment variable
 ## How to test
 
 ```bash
-make test          # brain: 44 tests
+make test          # brain: 52 tests
 make lint          # ruff check + format check
 make plugin-test   # plugin core: 107 checks, compiled with clang++ (no cmake needed)
 ```
@@ -105,9 +105,14 @@ can't reach the plugin. Getting the flag wrong in your manifest defeats it — w
 `tone3000-sync` is worth using:
 
 ```bash
-export TONE3000_TOKEN=...
-make t3k-sync
+export TONE3000_CLIENT_ID=...   # your TONE3000 *publishable* key
+make t3k-login                  # approve a short code in the browser, once
+make t3k-sync                   # reads your favorited tones
 ```
+
+Favorites are per-user, so the sync needs you signed in; the secret key (`TONE3000_TOKEN`)
+identifies the app, not you, and only works for `tone3000-sync --scope search`. The sign-in is
+stored in `~/.config/tone-architect/tone3000.json` and refreshes itself.
 
 TONE3000 records the distinction authoritatively as the tone's `gear` (`amp` vs `amp-cab`), so
 syncing from the API sets `includes_cab` from real data instead of a filename guess.

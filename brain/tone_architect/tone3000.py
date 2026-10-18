@@ -5,7 +5,9 @@ guess. TONE3000 records it authoritatively as the tone's `gear` — `amp` is a h
 full rig (the older `full-rig` value is a deprecated alias). Syncing from the API removes the
 guess entirely.
 
-Auth: pass a bearer token via TONE3000_TOKEN. Never hardcode it.
+Auth: `tone3000-login` signs you in (needed for --scope favorited/created, which are per-user).
+TONE3000_TOKEN (the secret key) is the fallback and only works for --scope search. Never
+hardcode either.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from .models import Capture, CaptureCategory, CaptureFormat, CaptureGain, CaptureManifest
+from .tone3000_auth import AuthError, resolve_token
 
 API_BASE = os.getenv("TONE3000_API_BASE", "https://www.tone3000.com/api/v1")
 
@@ -203,9 +206,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--download", help="also download model files into this folder")
     args = parser.parse_args(argv)
 
-    token = os.getenv("TONE3000_TOKEN")
-    if not token:
-        print("TONE3000_TOKEN is not set", file=sys.stderr)
+    try:
+        token, token_source = resolve_token()
+    except AuthError as exc:
+        print(str(exc), file=sys.stderr)
         return 1
 
     client = Tone3000Client(token)
@@ -232,6 +236,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     rigs = sum(1 for c in manifest.captures if c.category is CaptureCategory.amp and c.includes_cab)
     print(f"wrote {out}: {len(manifest.captures)} captures ({heads} amp heads, {rigs} full rigs)")
+    if not manifest.captures and args.scope != "search" and token_source == "secret-key":
+        print(
+            f"hint: --scope {args.scope} is per-user and the secret key isn't a user; "
+            "run tone3000-login first",
+            file=sys.stderr,
+        )
     return 0
 
 
