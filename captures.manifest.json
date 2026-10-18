@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "root": "captures",
+  "captures": [
+    {
+      "id": "t3k_1684_hiwatt_cab_4x12_fane_50_purple_label",
+      "name": "Hiwatt Cab 4x12 Fane 50 Purple Label",
+      "file": "t3k_1684_hiwatt_cab_4x12_fane_50_purple_label.wav",
+      "format": "wav_ir",
+      "category": "cab",
+      "gain": "n_a",
+      "character": [
+        "Hiwatt 4x12"
+      ],
+      "tags": [
+        "1970s",
+        "clean",
+        "guitar",
+        "ir",
+        "overdrive",
+        "vintage"
+      ],
+      "source": "tone3000",
+      "notes": "tone3000 id=1684; gear=cab; https://www.tone3000.com/tones/hiwatt-cab-4x12-fane-50-purple-label-1684",
+      "includes_cab": false
+    },
+    {
+      "id": "t3k_46432_rr_bighorn_fuzz",
+      "name": "RR Bighorn Fuzz",
+      "file": "t3k_46432_rr_bighorn_fuzz.nam",
+      "format": "nam",
+      "category": "pedal",
+      "gain": "fuzz",
+      "character": [
+        "Electro Harmonix Big Muff Rams Head",
+        "Wren and Cuff The Caprid"
+      ],
+      "tags": [
+        "big muff",
+        "caprid",
+        "cuff",
+        "ehx",
+        "electro harmonix",
+        "fuzz",
+        "muff",
+        "nam",
+        "pedal",
+        "rams head",
+        "roby rocks",
+        "robyrocks",
+        "wren"
+      ],
+      "source": "tone3000",
+      "notes": "tone3000 id=46432; gear=pedal; https://www.tone3000.com/tones/rr-bighorn-fuzz-46432",
+      "includes_cab": false
+    },
+    {
+      "id": "t3k_6233_hiwatt_custom_100_dr_103_1974",
+      "name": "Hiwatt Custom 100 DR 103 1974",
+      "file": "t3k_6233_hiwatt_custom_100_dr_103_1974.nam",
+      "format": "nam",
+      "category": "amp",
+      "gain": "n_a",
+      "character": [
+        "HiWatt DR103"
+      ],
+      "tags": [
+        "1970s",
+        "hiwatt",
+        "nam"
+      ],
+      "source": "tone3000",
+      "notes": "tone3000 id=6233; gear=amp; https://www.tone3000.com/tones/hiwatt-custom-100-dr-103-1974-6233",
+      "includes_cab": false
+    }
+  ]
+}
