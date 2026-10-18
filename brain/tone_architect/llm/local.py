@@ -30,7 +30,7 @@ class LocalLLM:
         self._use_grammar = use_grammar
         self._schema = structured_output_schema()
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict[str, Any] | None = None) -> str:
         payload: dict[str, Any] = {
             "model": self._config.local_model,
             "messages": [
@@ -41,12 +41,16 @@ class LocalLLM:
             "temperature": 0.2,
         }
 
-        if self._use_grammar:
+        if self._use_grammar and schema is None:
             payload["grammar"] = grammar_path().read_text()
         else:
             payload["response_format"] = {
                 "type": "json_schema",
-                "json_schema": {"name": "patch", "schema": self._schema, "strict": True},
+                "json_schema": {
+                    "name": "patch" if schema is None else "output",
+                    "schema": schema or self._schema,
+                    "strict": True,
+                },
             }
 
         url = self._config.local_url.rstrip("/") + "/chat/completions"

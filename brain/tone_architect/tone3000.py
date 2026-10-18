@@ -58,7 +58,18 @@ class Tone3000Client:
         )
 
     def search(self, **params: Any) -> list[dict]:
-        return self._paginate("/tones/search", params)
+        # /tones/search caps page_size at 25 and is heavily rate-limited.
+        return self._paginate("/tones/search", params, page_size=25)
+
+    def search_top(self, query: str, gears: str | None = None, limit: int = 10) -> list[dict]:
+        """One page of best-match results — what discovery uses, to stay under the rate limit."""
+        params = {"query": query, "gears": gears, "page": 1, "page_size": min(limit, 25)}
+        response = self._client.get(
+            "/tones/search", params={k: v for k, v in params.items() if v is not None}
+        )
+        response.raise_for_status()
+        body = response.json()
+        return list(body.get("data", body) if isinstance(body, dict) else body)[:limit]
 
     def favorited(self, **params: Any) -> list[dict]:
         return self._paginate("/tones/favorited", params)
@@ -72,12 +83,14 @@ class Tone3000Client:
             params["architecture"] = architecture
         return self._paginate("/models", params)
 
-    def _paginate(self, path: str, params: dict[str, Any], max_pages: int = 20) -> list[dict]:
+    def _paginate(
+        self, path: str, params: dict[str, Any], max_pages: int = 20, page_size: int = 50
+    ) -> list[dict]:
         out: list[dict] = []
         page = 1
         while page <= max_pages:
             query = {k: v for k, v in params.items() if v is not None}
-            query.update({"page": page, "page_size": 50})
+            query.update({"page": page, "page_size": page_size})
             response = self._client.get(path, params=query)
             response.raise_for_status()
             body = response.json()
@@ -85,7 +98,7 @@ class Tone3000Client:
             if not batch:
                 break
             out.extend(batch)
-            if len(batch) < 50:
+            if len(batch) < page_size:
                 break
             page += 1
         return out
@@ -165,14 +178,14 @@ def build_manifest(
             model = models[0] if models else None
         capture = tone_to_capture(tone, model)
         if download_dir is not None and model and model.get("model_url"):
-            _download(client, model["model_url"], download_dir / capture.file)
+            download(client, model["model_url"], download_dir / capture.file)
         captures.append(capture)
 
     root = str(download_dir) if download_dir else "captures"
     return CaptureManifest(root=root, captures=captures)
 
 
-def _download(client: Tone3000Client, url: str, dest: Path) -> None:
+def download(client: Tone3000Client, url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     response = client._client.get(url, follow_redirects=True)
     response.raise_for_status()

@@ -39,6 +39,17 @@ def _add_generate_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--out", "-o", default="out/patch.json", help="where to write the patch")
     p.add_argument("--recipes", help="path to recipes.seed.jsonl (defaults to the repo copy)")
     p.add_argument("--print", dest="show", action="store_true", help="print the patch to stdout")
+    p.add_argument(
+        "--discover",
+        action="store_true",
+        help="search TONE3000 for the gear this request needs; captures the patch uses are "
+        "added to --manifest (default captures.manifest.json)",
+    )
+    p.add_argument(
+        "--download",
+        action="store_true",
+        help="with --discover: also download the chosen models into the manifest's root folder",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -85,14 +96,83 @@ def _cmd_generate(args: argparse.Namespace) -> int:
 
     config = Config.load()
     try:
-        library = make_library(config, args.manifest)
+        if args.discover and config.source == "file" and not _exists(args.manifest):
+            library = None  # discovery can start from an empty library
+        else:
+            library = make_library(config, args.manifest)
         recipes = make_recipe_source(config, args.recipes or default_recipes_path())
         llm = make_llm(config)
     except (RuntimeError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
 
+    if args.discover:
+        return _generate_with_discovery(args, config, library, recipes, llm)
+    if args.download:
+        print("--download only applies with --discover", file=sys.stderr)
+        return 2
+
     result, path = run(args.request, library, llm, args.out, config=config, recipes=recipes)
+    return _report(args, result, path)
+
+
+def _exists(path: str | None) -> bool:
+    return bool(path) and Path(path).expanduser().is_file()
+
+
+def _generate_with_discovery(args, config, library, recipes, llm) -> int:
+    from .discover import (
+        DiscoveryLibrary,
+        discover_captures,
+        download_models,
+        plan_gear,
+        save_to_manifest,
+        used_discoveries,
+    )
+    from .pipeline import run
+    from .tone3000 import Tone3000Client
+    from .tone3000_auth import AuthError, resolve_token
+
+    try:
+        token, _ = resolve_token()
+    except AuthError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    plan = plan_gear(args.request, llm)
+    print("searching TONE3000 for: " + ", ".join(f"{p.query} ({p.role})" for p in plan))
+
+    client = Tone3000Client(token)
+    try:
+        try:
+            discovered = discover_captures(plan, client)
+        except Exception as exc:  # httpx errors: rate limit, auth, network
+            print(f"TONE3000 search failed: {exc}", file=sys.stderr)
+            return 1
+        print(f"found {len(discovered)} candidate captures")
+
+        combined = DiscoveryLibrary(library, discovered)
+        result, path = run(args.request, combined, llm, args.out, config=config, recipes=recipes)
+        if result.ok and result.patch is not None:
+            new = used_discoveries(result.patch, combined)
+            manifest_path = Path(args.manifest or "captures.manifest.json").expanduser()
+            if new:
+                save_to_manifest(new, manifest_path)
+                print(
+                    f"added {len(new)} capture(s) to {manifest_path}: "
+                    + ", ".join(c.name for c in new)
+                )
+                if args.download:
+                    failed = download_models(new, client, manifest_path)
+                    for capture_id in failed:
+                        print(f"warning: could not download {capture_id}", file=sys.stderr)
+    finally:
+        client.close()
+
+    return _report(args, result, path)
+
+
+def _report(args, result, path) -> int:
 
     for warning in result.warnings:
         print(f"warning: {warning}", file=sys.stderr)
