@@ -176,3 +176,53 @@ def test_cli_discover_end_to_end(tmp_path, monkeypatch):
 class _ClosableFakeClient(FakeClient):
     def close(self):
         pass
+
+
+def _manifest_with_discoveries(tmp_path):
+    library = _discovered_library()
+    path = tmp_path / "captures.manifest.json"
+    save_to_manifest(library.discovered, path)
+    return path
+
+
+def test_missing_files_lists_only_undownloaded_tone3000_captures(tmp_path):
+    from tone_architect.discover import missing_tone3000_files
+
+    path = _manifest_with_discoveries(tmp_path)
+    (tmp_path / "captures").mkdir()
+    (tmp_path / "captures" / "t3k_21_greenback_4x12.wav").write_bytes(b"ir")
+
+    missing = {c.id for c in missing_tone3000_files(path)}
+    assert "t3k_21_greenback_4x12" not in missing
+    assert "t3k_11_hiwatt_dr103_head" in missing
+    assert {c.id for c in missing_tone3000_files(path, only={"t3k_31_big_muff_pi"})} == {
+        "t3k_31_big_muff_pi"
+    }
+
+
+def test_download_command_fetches_missing_models(tmp_path, monkeypatch):
+    from tone_architect import discover
+
+    path = _manifest_with_discoveries(tmp_path)
+
+    class ModelsClient:
+        def models(self, tone_id, architecture=None):
+            return [{"id": tone_id, "model_url": f"https://t3k.test/m/{tone_id}"}]
+
+        def close(self):
+            pass
+
+    def fake_download(client, url, dest):
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(url)
+
+    monkeypatch.setattr(discover, "Tone3000Client", lambda token: ModelsClient())
+    monkeypatch.setattr(discover, "download", fake_download)
+    monkeypatch.setenv("TONE3000_TOKEN_FILE", str(tmp_path / "none.json"))
+    monkeypatch.setenv("TONE3000_TOKEN", "t3k_cs_secret")
+
+    assert discover.download_main(["-m", str(path)]) == 0
+    head = tmp_path / "captures" / "t3k_11_hiwatt_dr103_head.nam"
+    assert head.read_text() == "https://t3k.test/m/11"
+    # Second run has nothing left to do.
+    assert discover.download_main(["-m", str(path)]) == 0

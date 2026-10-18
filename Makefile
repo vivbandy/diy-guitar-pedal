@@ -8,7 +8,7 @@ CAPTURES ?= captures
 .DEFAULT_GOAL := help
 
 .PHONY: help venv install install-dev test lint fmt generate discover validate scaffold \
-        db-sync t3k-login t3k-sync plugin-test clean
+        db-sync t3k-login t3k-sync t3k-download plugin-test clean
 
 help:
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | expand -t24
@@ -57,6 +57,9 @@ t3k-login: ## sign in to TONE3000 (needs TONE3000_CLIENT_ID = publishable key)
 
 t3k-sync: ## build a manifest from your TONE3000 favorites (run t3k-login first)
 	$(BIN)/tone3000-sync --scope favorited --out captures.manifest.json --merge
+
+t3k-download: ## download model files for TONE3000 captures in MANIFEST that aren't on disk
+	$(BIN)/tone3000-download --manifest $(or $(DISCOVER_MANIFEST),captures.manifest.json)
 
 plugin-test: ## compile and run the plugin core tests (clang++, no cmake)
 	./plugin/tests/run.sh

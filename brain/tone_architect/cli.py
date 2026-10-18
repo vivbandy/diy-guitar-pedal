@@ -125,8 +125,10 @@ def _generate_with_discovery(args, config, library, recipes, llm) -> int:
         DiscoveryLibrary,
         discover_captures,
         download_models,
+        missing_tone3000_files,
         plan_gear,
         save_to_manifest,
+        used_capture_ids,
         used_discoveries,
     )
     from .pipeline import run
@@ -162,10 +164,16 @@ def _generate_with_discovery(args, config, library, recipes, llm) -> int:
                     f"added {len(new)} capture(s) to {manifest_path}: "
                     + ", ".join(c.name for c in new)
                 )
-                if args.download:
-                    failed = download_models(new, client, manifest_path)
-                    for capture_id in failed:
-                        print(f"warning: could not download {capture_id}", file=sys.stderr)
+            if args.download and manifest_path.is_file():
+                # Everything the patch uses that isn't on disk yet, not just this run's additions
+                # — a capture picked on an earlier run may never have been downloaded.
+                missing = missing_tone3000_files(manifest_path, only=used_capture_ids(result.patch))
+                failed = download_models(missing, client, manifest_path)
+                for capture in missing:
+                    if capture.id in failed:
+                        print(f"warning: could not download {capture.id}", file=sys.stderr)
+                    else:
+                        print(f"downloaded {capture.name}")
     finally:
         client.close()
 

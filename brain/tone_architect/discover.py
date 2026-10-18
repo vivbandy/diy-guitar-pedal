@@ -137,14 +137,31 @@ class DiscoveryLibrary:
         return score_captures(list(merged.values()), request, limit=max(limit, len(merged)))
 
 
-def used_discoveries(patch: Patch, library: DiscoveryLibrary) -> list[Capture]:
-    used = {
+def used_capture_ids(patch: Patch) -> set[str]:
+    return {
         node.params.capture_id
         for node in patch.chain
         if getattr(getattr(node, "params", None), "capture_id", None)
     }
+
+
+def used_discoveries(patch: Patch, library: DiscoveryLibrary) -> list[Capture]:
+    used = used_capture_ids(patch)
     base_ids = library.base.ids() if library.base else set()
     return [c for c in library.discovered if c.id in used and c.id not in base_ids]
+
+
+def missing_tone3000_files(manifest_path: Path, only: set[str] | None = None) -> list[Capture]:
+    """TONE3000 captures in the manifest whose model file isn't on disk yet."""
+    library = ManifestLibrary.from_path(manifest_path)
+    out = []
+    for capture in library.all():
+        if only is not None and capture.id not in only:
+            continue
+        path = library.resolve_file(capture.id)
+        if _tone_id(capture) is not None and path is not None and not path.is_file():
+            out.append(capture)
+    return out
 
 
 def save_to_manifest(captures: list[Capture], manifest_path: Path) -> CaptureManifest:
@@ -191,3 +208,46 @@ def _tone_id(capture: Capture) -> int | None:
         if key == "tone3000 id" and value.isdigit():
             return int(value)
     return None
+
+
+def download_main(argv: list[str] | None = None) -> int:
+    import argparse
+    import sys
+
+    from .tone3000_auth import AuthError, resolve_token
+
+    parser = argparse.ArgumentParser(
+        prog="tone3000-download",
+        description="Download model files for TONE3000 captures in a manifest that aren't on "
+        "disk yet (into the manifest's root folder).",
+    )
+    parser.add_argument("--manifest", "-m", default="captures.manifest.json")
+    args = parser.parse_args(argv)
+
+    manifest_path = Path(args.manifest).expanduser()
+    if not manifest_path.is_file():
+        print(f"no manifest at {manifest_path}", file=sys.stderr)
+        return 1
+    missing = missing_tone3000_files(manifest_path)
+    if not missing:
+        print("nothing to download: every TONE3000 capture already has its file")
+        return 0
+
+    try:
+        token, _ = resolve_token()
+    except AuthError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    client = Tone3000Client(token)
+    try:
+        failed = download_models(missing, client, manifest_path)
+    finally:
+        client.close()
+
+    library = ManifestLibrary.from_path(manifest_path)
+    for capture in missing:
+        if capture.id in failed:
+            print(f"FAILED  {capture.name}", file=sys.stderr)
+        else:
+            print(f"OK      {capture.name}  ->  {library.resolve_file(capture.id)}")
+    return 1 if failed else 0

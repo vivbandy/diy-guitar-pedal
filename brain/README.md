@@ -24,6 +24,7 @@ Extras: `cloud` (Anthropic), `local` (llama-server via httpx), `supabase`, `tone
 | `tone-architect validate <patch> -m <manifest> [--strict]` | validate an existing patch |
 | `tone-scaffold-manifest <folder> -o <manifest>` | scan a captures folder into a manifest stub |
 | `tone-architect "<request>" --discover [-m <manifest>] [--download]` | find gear on TONE3000, then generate |
+| `tone3000-download [-m <manifest>]` | fetch model files for TONE3000 captures not yet on disk |
 | `tone3000-login [--logout]` | sign in to TONE3000 (device code; needs `TONE3000_CLIENT_ID`) |
 | `tone3000-sync --scope favorited --merge` | build a manifest from the TONE3000 API |
 | `tone-sync --manifest <m> --recipes <r>` | idempotent upsert into Supabase |
