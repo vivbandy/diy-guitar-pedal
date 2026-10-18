@@ -182,3 +182,21 @@ Format:
 - **Rationale / impact:** The first real run may surface a request-shape mismatch. If
   `output_config` is rejected, `CloudLLM.complete` already falls back to a prompt-only JSON
   request, so a shape change degrades rather than breaks.
+
+## 2026-10-18 — Discovery mode (`--discover`)  (deviation from the brief)
+- **Question / context:** The brief assumes a closed library: you collect captures first and the
+  model only picks from them. With no TONE3000 favorites, that left nothing to pick from. The
+  user wants the app to find the right gear itself.
+- **Finding:** `/tones/search` (best-match, `gears` filter, page_size ≤ 25) can locate a capture
+  per gear item, and every result carries `gear`, so `includes_cab` stays authoritative. Search is
+  "heavily rate-limited"; whether the secret key is accepted there is undocumented.
+- **Decision:** Add opt-in `--discover`: one LLM call turns the request into ≤ 6 gear queries (a
+  small schema passed through the existing `complete()`), one best-match search per query (top
+  3), then the normal generate → validate → repair loop over own library + discoveries. Only
+  captures the final patch uses are merged into the manifest; `--download` fetches their models.
+  The closed-library path is unchanged and remains the default.
+- **Rationale / impact:** Prime Directive 4 (cab pairing) is untouched: discovered heads are
+  rejected without an IR exactly like local ones, and a cab query is always added to the plan.
+  "Never invents an amp you don't have" becomes "never invents an amp that doesn't exist on
+  TONE3000". Auth reuses `tone3000-login`'s token, falling back to `TONE3000_TOKEN`.
+

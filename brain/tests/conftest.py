@@ -63,7 +63,7 @@ class FakeLLM:
         self.responses = list(responses)
         self.calls: list[tuple[str, str]] = []
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict | None = None) -> str:
         self.calls.append((system, user))
         return self.responses.pop(0) if self.responses else "{}"
 

@@ -7,7 +7,7 @@ CAPTURES ?= captures
 
 .DEFAULT_GOAL := help
 
-.PHONY: help venv install install-dev test lint fmt generate validate scaffold \
+.PHONY: help venv install install-dev test lint fmt generate discover validate scaffold \
         db-sync t3k-login t3k-sync plugin-test clean
 
 help:
@@ -34,6 +34,10 @@ fmt: ## ruff autoformat
 generate: ## REQUEST="..." generate a patch
 	@test -n "$(REQUEST)" || { echo 'usage: make generate REQUEST="gilmour lead"'; exit 2; }
 	$(BIN)/tone-architect "$(REQUEST)" --manifest $(MANIFEST) --out $(OUT)
+
+discover: ## REQUEST="..." find gear on TONE3000, then generate (adds used captures to MANIFEST)
+	@test -n "$(REQUEST)" || { echo 'usage: make discover REQUEST="gilmour lead"'; exit 2; }
+	$(BIN)/tone-architect "$(REQUEST)" --discover --manifest $(or $(DISCOVER_MANIFEST),captures.manifest.json) --out $(OUT)
 
 validate: ## PATCH=... validate a patch against MANIFEST
 	$(BIN)/tone-architect validate $(or $(PATCH),$(OUT)) --manifest $(MANIFEST) --strict

@@ -69,7 +69,7 @@ Needs Python 3.11+ (3.13 recommended). Configuration is all environment variable
 ## How to test
 
 ```bash
-make test          # brain: 52 tests
+make test          # brain: 60 tests
 make lint          # ruff check + format check
 make plugin-test   # plugin core: 107 checks, compiled with clang++ (no cmake needed)
 ```
@@ -116,6 +116,22 @@ stored in `~/.config/tone-architect/tone3000.json` and refreshes itself.
 
 TONE3000 records the distinction authoritatively as the tone's `gear` (`amp` vs `amp-cab`), so
 syncing from the API sets `includes_cab` from real data instead of a filename guess.
+
+### Discovery: let it find the gear
+
+Don't have a library yet? `--discover` turns the request into a short gear list, searches
+TONE3000 for each item, and builds the patch from what it finds:
+
+```bash
+.venv/bin/tone-architect "Gilmour's Comfortably Numb lead" --discover -m captures.manifest.json
+# or: make discover REQUEST="..."
+```
+
+`includes_cab` still comes from TONE3000's `gear` field, so the cabinet rule holds. Only the
+captures the patch actually uses are added to your manifest; add `--download` to fetch their model
+files too. Each request costs one LLM call for the gear list plus one search per item (at most
+six), since TONE3000 rate-limits search heavily. Your own captures stay in the running alongside
+what it finds.
 
 ## Supabase (optional)
 

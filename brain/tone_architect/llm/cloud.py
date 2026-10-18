@@ -78,7 +78,7 @@ class CloudLLM:
                 "`ant auth login`. Set TONE_BACKEND=local to use llama-server instead."
             )
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict[str, Any] | None = None) -> str:
         cfg = self._config
         kwargs: dict[str, Any] = {
             "model": cfg.cloud_model,
@@ -88,7 +88,7 @@ class CloudLLM:
             "thinking": {"type": "adaptive"},
             "output_config": {
                 "effort": cfg.cloud_effort,
-                "format": {"type": "json_schema", "schema": self._schema},
+                "format": {"type": "json_schema", "schema": schema or self._schema},
             },
         }
 

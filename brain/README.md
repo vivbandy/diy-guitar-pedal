@@ -23,6 +23,7 @@ Extras: `cloud` (Anthropic), `local` (llama-server via httpx), `supabase`, `tone
 | `tone-architect "<request>" -m <manifest> -o <out>` | generate a patch |
 | `tone-architect validate <patch> -m <manifest> [--strict]` | validate an existing patch |
 | `tone-scaffold-manifest <folder> -o <manifest>` | scan a captures folder into a manifest stub |
+| `tone-architect "<request>" --discover [-m <manifest>] [--download]` | find gear on TONE3000, then generate |
 | `tone3000-login [--logout]` | sign in to TONE3000 (device code; needs `TONE3000_CLIENT_ID`) |
 | `tone3000-sync --scope favorited --merge` | build a manifest from the TONE3000 API |
 | `tone-sync --manifest <m> --recipes <r>` | idempotent upsert into Supabase |
@@ -45,6 +46,7 @@ tone_architect/
   recipe_source.py     RecipeSource protocol; File + Supabase + Null
   scaffold_manifest.py filename inference for a manifest stub
   tone3000.py          TONE3000 API -> manifest (authoritative includes_cab)
+  discover.py          --discover: gear plan -> TONE3000 search -> candidates; saves what's used
   tone3000_auth.py     tone3000-login: OAuth device sign-in, stored + auto-refreshed token
   sync.py              manifest + recipes -> Supabase
   llm/

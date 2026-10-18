@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 
 @runtime_checkable
 class LLMClient(Protocol):
-    """Text in, patch JSON out. Backends differ only in how they constrain the output."""
+    """Text in, JSON out. Backends differ only in how they constrain the output.
+
+    `schema` defaults to the patch schema; discovery passes its own small schema for the gear plan.
+    """
 
     name: str
 
-    def complete(self, system: str, user: str) -> str: ...
+    def complete(self, system: str, user: str, schema: dict[str, Any] | None = None) -> str: ...
