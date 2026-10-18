@@ -27,6 +27,7 @@ tone-sync = "tone_architect.sync:main"
 tone-scaffold-manifest = "tone_architect.scaffold_manifest:main"
 tone3000-sync = "tone_architect.tone3000:main"
 tone3000-login = "tone_architect.tone3000_auth:main"
+tone3000-download = "tone_architect.discover:download_main"
 
 [tool.setuptools.packages.find]
 include = ["tone_architect*"]

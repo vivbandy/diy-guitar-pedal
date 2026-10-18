@@ -69,7 +69,7 @@ Needs Python 3.11+ (3.13 recommended). Configuration is all environment variable
 ## How to test
 
 ```bash
-make test          # brain: 60 tests
+make test          # brain: 62 tests
 make lint          # ruff check + format check
 make plugin-test   # plugin core: 107 checks, compiled with clang++ (no cmake needed)
 ```
@@ -129,7 +129,8 @@ TONE3000 for each item, and builds the patch from what it finds:
 
 `includes_cab` still comes from TONE3000's `gear` field, so the cabinet rule holds. Only the
 captures the patch actually uses are added to your manifest; add `--download` to fetch their model
-files too. Each request costs one LLM call for the gear list plus one search per item (at most
+files too, or run `make t3k-download` later to fetch any TONE3000 capture in your manifest that
+isn't on disk yet. Each request costs one LLM call for the gear list plus one search per item (at most
 six), since TONE3000 rate-limits search heavily. Your own captures stay in the running alongside
 what it finds.
 
