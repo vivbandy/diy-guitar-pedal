@@ -200,3 +200,20 @@ Format:
   "Never invents an amp you don't have" becomes "never invents an amp that doesn't exist on
   TONE3000". Auth reuses `tone3000-login`'s token, falling back to `TONE3000_TOKEN`.
 
+
+## 2026-10-19 — Tone matching pilot: offline renderer + fingerprint tuner  (new capability)
+- **Question / context:** Can we work backwards from a recording to a patch? The user wants a
+  3-song pilot ("Shazam for tone") before investing further.
+- **Finding:** A finished recording can't be inverted into a rig, but several properties are
+  measurable and mostly independent of the notes played: frequency balance, distortion (crest,
+  spectral flatness), compression (dynamic range), delay time (cepstral peak; recovered exactly
+  through NAM + IR + feedback delay + reverb in testing), decay, and modulation rate (rough).
+- **Decision:** Add `plugin/render` (`tone_render`, a CLI that runs a patch offline with NAM Core
+  and AudioDSPTools' IR, built with a C++20 compiler only) and `tone_architect.match`
+  (`tone-match`: numpy fingerprint, weighted distance, coordinate-search tuner). Measured values
+  are seeded (delay time, modulation rate); the rest are searched within schema ranges. The LLM
+  keeps choosing structure; the tuner only moves numbers.
+- **Rationale / impact:** Effects being parametric (not IR snapshots) is what makes tuning
+  possible, and it's the gap versus capture-only players. numpy is an optional extra (`match`), so
+  the core brain stays dependency-light. Reference audio never enters the repo (`references/`
+  is git-ignored). A render costs ~1–5 s, so a tune run is a few minutes.
