@@ -19,6 +19,7 @@ cloud = ["anthropic>=0.40"]
 local = ["httpx>=0.27"]
 supabase = ["supabase>=2.4"]
 tone3000 = ["httpx>=0.27"]
+match = ["numpy>=1.26"]
 dev = ["pytest>=8.0", "ruff>=0.5"]
 
 [project.scripts]
@@ -28,6 +29,7 @@ tone-scaffold-manifest = "tone_architect.scaffold_manifest:main"
 tone3000-sync = "tone_architect.tone3000:main"
 tone3000-login = "tone_architect.tone3000_auth:main"
 tone3000-download = "tone_architect.discover:download_main"
+tone-match = "tone_architect.match.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["tone_architect*"]

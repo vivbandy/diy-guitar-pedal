@@ -134,6 +134,29 @@ isn't on disk yet. Each request costs one LLM call for the gear list plus one se
 six), since TONE3000 rate-limits search heavily. Your own captures stay in the running alongside
 what it finds.
 
+## Tone matching (pilot)
+
+Give it a recording of the tone you want and it tunes a patch toward it. It can't recover a rig
+from a record, but it can measure what it hears and adjust the knobs it controls:
+
+- **Measured and seeded directly:** delay time (from the echo spacing) and modulation rate.
+- **Searched:** how hard each capture is driven, EQ band gains, compressor, delay feedback/mix,
+  reverb mix/decay, modulation depth/mix.
+- **Left to the brain:** which captures and effects make up the chain.
+
+```bash
+make render-build                       # tone_render: dry WAV + patch.json -> WAV (offline)
+.venv/bin/python -m pip install -e "brain[match]"
+make match REF=references/numb-solo-guitar.wav DI=references/numb-di.wav PATCH=out/patch.json
+# -> out/patch.tuned.json + out/patch.tuned.report.json, and a list of what's still off
+```
+
+`REF` should be the guitar on its own. For a full mix, pull the guitar out first with a
+stem-separation model, for example `demucs -n htdemucs_6s --two-stems guitar song.wav`. `DI` is a
+dry recording of you playing roughly the same part; it doesn't have to be note-perfect. Keep
+reference audio in `references/` (git-ignored). `tone-match fingerprint` and `tone-match compare`
+show what the analyzer hears and how two recordings differ.
+
 ## Supabase (optional)
 
 Metadata in the cloud, binaries still local. Off by default.

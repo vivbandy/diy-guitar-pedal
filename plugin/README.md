@@ -8,6 +8,24 @@ file-watch transport) is written, compiles clean under `-Wall -Wextra`, and pass
 The AU wrapper is **not** built — it needs the fork below plus `cmake`, which is not installed on
 this machine. See [Getting to a running AU](#getting-to-a-running-au).
 
+## Offline renderer (`render/`)
+
+`tone_render` plays a dry recording through a `patch.json` without a DAW, using the same code
+the AU will: our effects from `src/`, NAM Core for `nam_capture`, and AudioDSPTools'
+`ImpulseResponse` for `ir_cab` (the IR code the NeuralAmpModeler plugin uses, so 8192-tap
+truncation and level normalization match). NAM models are levelled to -18 dB like the plugin's
+Normalize; `input_level_db` on a capture node sets how hard it's driven.
+
+```bash
+./plugin/render/build.sh      # C++20 compiler only; fetches NAM Core v0.5.3 into render/.deps
+                              # (or NAM_CORE_DIR=/path/to/NeuralAmpModelerCore)
+plugin/render/.build/tone_render --patch out/patch.json --manifest captures.manifest.json \
+  --in di.wav --out wet.wav
+```
+
+The input must be at the models' sample rate (usually 48 kHz). It's what `tone-match` renders
+candidates with.
+
 ## Prime directives this half owns
 
 - **Audio Unit only.** Logic and GarageBand load AU, not VST. VST3 builds are a side effect, not

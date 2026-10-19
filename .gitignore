@@ -18,6 +18,10 @@ captures/
 
 plugin/build/
 plugin/tests/.build/
+plugin/render/.build/
+plugin/render/.deps/
+# Reference songs and stems stay local: they're commercial recordings.
+references/
 *.component
 *.vst3
 *.au

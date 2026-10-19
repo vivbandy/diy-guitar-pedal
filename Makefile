@@ -8,7 +8,7 @@ CAPTURES ?= captures
 .DEFAULT_GOAL := help
 
 .PHONY: help venv install install-dev test lint fmt generate discover validate scaffold \
-        db-sync t3k-login t3k-sync t3k-download plugin-test clean
+        db-sync t3k-login t3k-sync t3k-download plugin-test render-build match clean
 
 help:
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | expand -t24
@@ -20,7 +20,7 @@ install: venv ## install the brain
 	$(BIN)/pip install -e "brain[cloud]"
 
 install-dev: venv ## install the brain with dev + all optional backends
-	$(BIN)/pip install -e "brain[cloud,local,supabase,tone3000,dev]"
+	$(BIN)/pip install -e "brain[cloud,local,supabase,tone3000,match,dev]"
 
 test: ## run the brain test suite
 	cd brain && ../$(BIN)/python -m pytest -q
@@ -64,6 +64,14 @@ t3k-download: ## download model files for TONE3000 captures in MANIFEST that are
 plugin-test: ## compile and run the plugin core tests (clang++, no cmake)
 	./plugin/tests/run.sh
 
+render-build: ## build tone_render, the offline patch renderer (fetches NAM Core on first run)
+	./plugin/render/build.sh
+
+match: ## REF=song.wav DI=dry.wav [PATCH=...] tune PATCH's knobs to sound like REF
+	@test -n "$(REF)" -a -n "$(DI)" || (echo 'usage: make match REF=song.wav DI=dry.wav [PATCH=out/patch.json]'; exit 1)
+	$(BIN)/tone-match tune --reference "$(REF)" --di "$(DI)" --patch $(or $(PATCH),$(OUT)) \
+	  --manifest $(or $(DISCOVER_MANIFEST),captures.manifest.json) --out $(basename $(or $(PATCH),$(OUT))).tuned.json
+
 clean:
-	rm -rf $(VENV) out plugin/tests/.build brain/.pytest_cache brain/.ruff_cache
+	rm -rf $(VENV) out plugin/tests/.build plugin/render/.build brain/.pytest_cache brain/.ruff_cache
 	find . -name __pycache__ -type d -prune -exec rm -rf {} +
